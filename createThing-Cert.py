@@ -12,7 +12,9 @@ thingId = ''
 thingName = ''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(15)])
 defaultPolicyName = 'GGTest_Group_Core-policy'
 ###################################################
-
+#TO DO: 
+#1. Modify names of above variables to work with our Greengrass setup
+#2. Add add_thing_to_thing_group, create_keys_and_certificate, attach_policy, attach_thing_principal.
 def createThing():
   global thingClient
   thingResponse = thingClient.create_thing(
