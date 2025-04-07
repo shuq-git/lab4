@@ -1,0 +1,1 @@
+python3 basic_discovery.py   --thing_name TestThing   --topic 'clients/MyClientDevice1/hello/world'   --message 'Hello World!'  --ca_file ~/lab4/certs/KeyPair.pem  --cert ~/lab4/certs/firsttry-certificate.pem.crt --key ~/lab4/certs/firsttry-private.pem.key --region us-east-2  --verbosity Warn
