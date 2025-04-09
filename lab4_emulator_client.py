@@ -27,7 +27,8 @@ class MQTTClient:
         self.state = 0
         self.client = AWSIoTMQTTClient(self.device_id)
         #TODO 2: modify your broker address
-        self.client.configureEndpoint("amazonaws.com", 8883)
+        #self.client.configureEndpoint("amazonaws.com", 8883)
+        self.client.configureEndpoint("aw1peawvf3tzn-ats.iot.us-east-1.amazonaws.com", 8883)
         self.client.configureCredentials("./keys/AmazonRootCA1.pem", key, cert)
         self.client.configureOfflinePublishQueueing(-1)  # Infinite offline Publish queueing
         self.client.configureDrainingFrequency(2)  # Draining: 2 Hz
