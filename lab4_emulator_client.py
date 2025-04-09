@@ -12,11 +12,11 @@ device_st = 0
 device_end = 100
 
 #Path to the dataset, modify this
-data_path = "vehicle.csv"
+data_path = "vehicle0.csv"
 
 #Path to your certificates, modify this
-certificate_formatter = "certificate.pem"
-key_formatter = "device.private.pem"
+certificate_formatter = "certs/firsttry-certificate.pem.crt"
+key_formatter = "certs/firsttry-private.pem.key"
 
 
 class MQTTClient:
@@ -26,8 +26,8 @@ class MQTTClient:
         self.state = 0
         self.client = AWSIoTMQTTClient(self.device_id)
         #TODO 2: modify your broker address
-        self.client.configureEndpoint("amazonaws.com", 8883)
-        self.client.configureCredentials("./keys/AmazonRootCA1.pem", key, cert)
+        self.client.configureEndpoint("aw1peawvf3tzn-ats.iot.us-east-1.amazonaws.com", 8883)
+        self.client.configureCredentials("certs/AmazonRootCA1.pem", key, cert)
         self.client.configureOfflinePublishQueueing(-1)  # Infinite offline Publish queueing
         self.client.configureDrainingFrequency(2)  # Draining: 2 Hz
         self.client.configureConnectDisconnectTimeout(10)  # 10 sec
@@ -37,7 +37,7 @@ class MQTTClient:
 
     def customOnMessage(self,message):
         #TODO 3: fill in the function to show your received message
-        print("client {} received payload {} from topic {}".format(self.device_id, , ))
+        print("client {} received payload {} from topic {}".format(self.device_id, message.payload, message.topic))
 
 
     # Suback callback
