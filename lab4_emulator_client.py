@@ -9,14 +9,14 @@ import numpy as np
 #TODO 1: modify the following parameters
 #Starting and end index, modify this
 device_st = 0
-device_end = 5
+device_end = 4
 
 #Path to the dataset, modify this
-data_path = "vehicle0.csv"
+data_path = "vehicle{}.csv"
 
 #Path to your certificates, modify this
-certificate_formatter = "certs/firsttry-certificate.pem.crt"
-key_formatter = "certs/firsttry-private.pem.key"
+certificate_formatter = "certs/TestThing_Renee.cert.pem"
+key_formatter = "certs/TestThing_Renee.private.key"
 
 
 class MQTTClient:
@@ -25,8 +25,7 @@ class MQTTClient:
         self.device_id = str(device_id)
         self.state = 0
         self.client = AWSIoTMQTTClient(self.device_id)
-        #TODO 2: modify your broker address
-        self.client.configureEndpoint("aw1peawvf3tzn-ats.iot.us-east-1.amazonaws.com", 8883)
+        self.client.configureEndpoint("aw1peawvf3tzn-ats.iot.us-east-2.amazonaws.com", 8883)
         self.client.configureCredentials("certs/AmazonRootCA1.pem", key, cert)
         self.client.configureOfflinePublishQueueing(-1)  # Infinite offline Publish queueing
         self.client.configureDrainingFrequency(2)  # Draining: 2 Hz
