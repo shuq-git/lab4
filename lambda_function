@@ -1,0 +1,80 @@
+import json
+import logging
+import sys
+import datetime
+import boto3
+from collections import defaultdict
+
+# Logging
+logger = logging.getLogger(__name__)
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+# SDK Client
+client = boto3.client('iot-data', region_name='us-east-2')
+s3_client = boto3.client('s3')
+bucket_name = 'lab-4-firehose-bucket'
+
+def lambda_handler(event, context):
+
+    # If the event is a string, parse it
+    if isinstance(event, str):
+        event = json.loads(event)
+
+    # If it's a single record, wrap it in a list
+    if isinstance(event, dict):
+        event = [event]
+        
+    # Group CO2 values by vehicle ID
+    vehicle_data = defaultdict(list)
+    for record in event:
+        CO2_val = float(record['vehicle_CO2'])
+        vehicle_id = record['vehicle_id']
+        vehicle_data[vehicle_id].append(CO2_val)
+
+    # For each vehicle, publish and upload to S3
+    for vehicle_id, co2_values in vehicle_data.items():
+        new_max_CO2 = max(co2_values)
+
+        # Check existing max in S3 (if any)
+        s3_key = f"vehicle_data/{vehicle_id}.json"
+        current_max_CO2 = 0.0
+
+        try:
+            existing_obj = s3_client.get_object(Bucket=bucket_name, Key=s3_key)
+            existing_data = json.loads(existing_obj['Body'].read())
+            current_max_CO2 = float(existing_data.get("max_CO2", 0.0))
+        except s3_client.exceptions.NoSuchKey:
+            logger.info(f"No previous record for vehicle {vehicle_id}, creating new entry.")
+        except Exception as e:
+            logger.error(f"Failed to fetch existing data for {vehicle_id}: {str(e)}")
+
+        # Get the true max CO2
+        final_max_CO2 = max(current_max_CO2, new_max_CO2)
+
+        # Publish to MQTT
+        topic = f"iot/Vehicle_{vehicle_id}"
+        payload = json.dumps({"max_CO2": final_max_CO2})
+        client.publish(topic=topic, qos=1, payload=payload)
+        logger.info(f"Published to {topic}: {payload}")
+
+        # Save to S3
+        s3_payload = {
+            "vehicle_stat": vehicle_id,
+            "max_CO2": final_max_CO2,
+            "timestamp": datetime.datetime.utcnow().isoformat()
+        }
+
+        try:
+            s3_response = s3_client.put_object(
+                Bucket=bucket_name,
+                Key=s3_key,
+                Body=json.dumps(s3_payload),
+                ContentType="application/json"
+            )
+            logger.info(f"Successfully uploaded to S3 for {vehicle_id}")
+        except Exception as e:
+            logger.error(f"Error uploading to S3 for {vehicle_id}: {str(e)}")
+
+    return {
+        "statusCode": 200,
+        "body": json.dumps({"vehicles_processed": list(vehicle_data.keys())})
+    }
